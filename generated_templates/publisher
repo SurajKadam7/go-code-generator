@@ -1,0 +1,78 @@
+package test
+
+import (
+	"context"
+	"encoding/json"
+	"github.com/go-redis/redis"
+	"go.mongodb.org/mongo-driver/mongo"
+	"kafka github.com/segmentio/kafka-go"
+)
+
+type Publish struct {
+	client kafka.Client
+	next   Service
+}
+
+func New(client kafka.Client, next Service) Publish {
+	return Publish{
+		client: client,
+		next:   next,
+	}
+}
+func (p Publish) H2H(ctx context.Context, clietn redis.Client) (err error) {
+
+	type H2HPublisher struct {
+		ctx    context.Context
+		clietn redis.Client
+	}
+
+	_H2H_Pub := H2HPublisher{ctx: ctx,
+		clietn: clietn,
+	}
+
+	data, err := json.Marshal(&_H2H_Pub)
+	if err != nil {
+		return err
+	}
+	return p.client.Publish(data)
+}
+
+func (p Publish) DealEnd(ctx context.Context, userId int64, clietn redis.Client) (err error) {
+
+	type DealEndPublisher struct {
+		ctx    context.Context
+		userId int64
+		clietn redis.Client
+	}
+
+	_DealEnd_Pub := DealEndPublisher{ctx: ctx,
+		userId: userId,
+		clietn: clietn,
+	}
+
+	data, err := json.Marshal(&_DealEnd_Pub)
+	if err != nil {
+		return err
+	}
+	return p.client.Publish(data)
+}
+
+func (p Publish) Start(ctx context.Context, tourId int64, clietn mongo.Client) (err error) {
+
+	type StartPublisher struct {
+		ctx    context.Context
+		tourId int64
+		clietn mongo.Client
+	}
+
+	_Start_Pub := StartPublisher{ctx: ctx,
+		tourId: tourId,
+		clietn: clietn,
+	}
+
+	data, err := json.Marshal(&_Start_Pub)
+	if err != nil {
+		return err
+	}
+	return p.client.Publish(data)
+}
