@@ -1,4 +1,4 @@
-module github.com/SurajKadam7/go-auto
+module github.com/SurajKadam7/go-code-generator
 
 go 1.21.5
 
