@@ -1,0 +1,36 @@
+package publisher 
+
+
+// required looping to create the struct 
+type Publish struct {
+	client kafka.Client
+	next Publisher
+}
+
+// this is a single function no need looping 
+// may need to loop for setting the values  
+func New(client kafka.client, next Publisher)Publisher{
+	return Publish{
+		client: client, 
+		next: next,
+	}
+}
+
+
+// below function to be created inside a loop 
+func (p *Publish) H2hPublisher(ctx context.Context, data Data)error{
+	// do the publishing 
+	return nil
+}
+
+
+func (p *Publish) MatchMakingPublisher(ctx context.Context, data Data)error{
+	// do the publishing 
+	return nil
+}
+
+
+var mode = type struct{
+	packageName string
+	interfaceName string 
+}

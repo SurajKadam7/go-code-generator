@@ -1,0 +1,42 @@
+package {{.PackageName}}
+
+import(
+  {{range $p := .Imports}} 
+  {{- $p}}
+  {{end -}}
+)
+
+
+type Publish struct{
+   client kafka.Client
+   next {{.InterfaceName}}
+}
+
+func New(client kafka.Client, next {{.InterfaceName}}) Publish{
+   return Publish{
+      client: client,
+      next: next,
+   }
+}
+
+{{ range $method := .Methods}}
+func (p Publish) {{$method.Name}}(
+  {{- range $arg := $method.Args}}
+  {{- $arg.Name}} {{$arg.Dtype}},
+  {{- end -}})(
+  {{- range $arg := $method.Result}}
+  {{- $arg.Name}} {{$arg.Dtype}},
+  {{- end}}) {
+  vr := type {{$method.Name}}_Kafka struct{
+          {{range $arg := $method.Args}}
+          {{- $arg.Name}} {{$arg.Dtype}}
+          {{end -}}
+      }
+
+  data, err := json.NewEncoder(os.Stdout).Encode(&vr)
+  if err != nil{
+    return err
+  }
+  return p.client.Publish()
+}
+{{end}}
