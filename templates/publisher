@@ -1,0 +1,63 @@
+package {{.PackageName}}
+
+import(
+  {{range $p := .Imports}} 
+  {{- $p}}
+  {{end -}}
+)
+
+
+type Publish struct{
+   client kafka.Client
+   next {{.InterfaceName}}
+}
+
+func New(client kafka.Client, next {{.InterfaceName}}) Publish{
+   return Publish{
+      client: client,
+      next: next,
+   }
+}
+
+{{- define "argDeclaration" -}}
+{{- range $arg := . -}}
+{{- $arg.Name}} {{$arg.Dtype}},
+{{- end -}}
+{{- end -}}
+
+{{- define "structFields" -}}
+{{range $arg := . -}}
+{{$arg.Name}} {{$arg.Dtype}}
+{{ end -}}
+{{- end -}}
+
+
+{{- define "structInitialization" -}}
+{{range $arg := . -}}
+{{$arg.Name}}: {{$arg.Name}},
+{{ end -}}
+{{- end -}}
+
+{{- range $method := .Methods}}
+func (p Publish) {{$method.Name}}(
+  {{- template "argDeclaration" $method.Args}})(
+  {{- template "argDeclaration" $method.Result}}) {
+
+
+  type {{$method.Name -}} Publisher  struct {
+    {{template "structFields" $method.Args}}
+  }
+
+  _{{$method.Name}}_Pub := {{$method.Name -}} Publisher{
+    {{- template "structInitialization" $method.Args}}
+  }
+
+
+  data, err := json.Marshal(&_{{$method.Name}}_Pub)
+  if err != nil {
+    return err
+  }
+  return p.client.Publish(data)
+}
+{{end}}
+
